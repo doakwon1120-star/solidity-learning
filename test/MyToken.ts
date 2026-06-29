@@ -19,18 +19,15 @@ describe("My token", () => {
     ]);
   });
   describe("Basic state value check", () => {
-    it("should return name"),
-      async () => {
-        expect(await myTokenC.name()).equal("MyToken");
-      };
-    it("should return symbol"),
-      async () => {
-        expect(await myTokenC.symbol()).equal("MT");
-      };
-    it("should return decimals"),
-      async () => {
-        expect(await myTokenC.decimals()).equal(decimals);
-      };
+    it("should return name", async () => {
+      expect(await myTokenC.name()).equal("MyToken");
+    });
+    it("should return symbol", async () => {
+      expect(await myTokenC.symbol()).equal("MT");
+    });
+    it("should return decimals", async () => {
+      expect(await myTokenC.decimals()).equal(decimals);
+    });
     it("should return 100 totalSupply", async () => {
       expect(await myTokenC.totalSupply()).equal(
         mintingAmount * 10n ** decimals,
@@ -48,11 +45,20 @@ describe("My token", () => {
   });
   describe("Transfer", () => {
     it("should have 0.5MT", async () => {
+      const signer0 = signers[0];
       const signer1 = signers[1];
-      await myTokenC.transfer(
-        hre.ethers.parseUnits("0.5", decimals),
-        signer1.address,
-      );
+      await expect(
+        myTokenC.transfer(
+          hre.ethers.parseUnits("0.5", decimals),
+          signer1.address,
+        ),
+      )
+        .to.emit(myTokenC, "Transfer")
+        .withArgs(
+          signer0.address,
+          signer1.address,
+          hre.ethers.parseUnits("0.5", decimals),
+        );
       expect(await myTokenC.balanceOf(signer1.address)).equal(
         hre.ethers.parseUnits("0.5", decimals),
       );
