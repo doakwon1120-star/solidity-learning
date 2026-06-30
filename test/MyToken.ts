@@ -98,5 +98,32 @@ describe("My token", () => {
           ),
       ).to.be.revertedWith("insufficient allowance");
     });
+
+    it("should allow signer1 to transfer signer0's MT after approval", async () => {
+      const signer0 = signers[0];
+      const signer1 = signers[1];
+
+      const amount = hre.ethers.parseUnits("10", decimals);
+
+      await myTokenC.connect(signer0).approve(signer1.address, amount);
+
+      await expect(
+        myTokenC
+          .connect(signer1)
+          .transferFrom(signer0.address, signer1.address, amount),
+      )
+        .to.emit(myTokenC, "Transfer")
+        .withArgs(signer0.address, signer1.address, amount);
+
+      expect(await myTokenC.balanceOf(signer0.address)).equal(
+        mintingAmount * 10n ** decimals - amount,
+      );
+
+      expect(await myTokenC.balanceOf(signer1.address)).equal(amount);
+
+      expect(await myTokenC.allowance(signer0.address, signer1.address)).equal(
+        0n,
+      );
+    });
   });
 });
